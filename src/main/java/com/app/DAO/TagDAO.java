@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TagDAO {
-    Optional<Tag> getById(Long id);
-    boolean create(Tag tag);
-    boolean update(Tag tag);
-    boolean deleteById(Long id);
+    Optional<Tag> getById(Long id) throws SQLException;
+    boolean create(Tag tag) throws SQLException;
+    boolean update(Tag tag) throws SQLException;
+    boolean deleteById(Long id) throws SQLException;
 
     Tag mapTag(ResultSet rs) throws SQLException;
     List<Tag> getTagsByMenuItemId(Long id) throws SQLException;

@@ -14,18 +14,18 @@ import java.util.Optional;
 import static java.sql.Types.NULL;
 
 public class MenuItemDAOImpl implements MenuItemDAO {
-    private DataSource dataSource;
+    private DataSource1 dataSource;
 
     public static final String GET_MENU_ITEM_BY_ID = "SELECT * FROM menu_items where id = ?;";
 
-    public static final String GET_ALL_MENU_ITEMS = "SELECT *" +
-                                                    "FROM menu_items";
+    public static final String GET_ALL_MENU_ITEMS = "SELECT * " +
+                                                    "FROM menu_items;";
 
-    public static final String GET_ALL_MENU_ITEMS_BY_TYPE = "SELECT *" +
-                                                            "FROM menu_items" +
+    public static final String GET_ALL_MENU_ITEMS_BY_TYPE = "SELECT * " +
+                                                            "FROM menu_items " +
                                                             "WHERE type= ?";
 
-    public static final String DELETE_MENU_ITEM_BY_ID = "DELETE FROM menu_items" +
+    public static final String DELETE_MENU_ITEM_BY_ID = "DELETE FROM menu_items " +
                                                         "WHERE id = ?;";
 
     public static final String CREATE_MENU_ITEM = "INSERT INTO menu_items (name, discription, price, type) " +
@@ -34,7 +34,7 @@ public class MenuItemDAOImpl implements MenuItemDAO {
             "VALUES (?, ?, ?, ?, ?);";
 
 
-    public MenuItemDAOImpl(DataSource dataSource) {
+    public MenuItemDAOImpl(DataSource1 dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -64,10 +64,10 @@ public class MenuItemDAOImpl implements MenuItemDAO {
             if (resultSet.next()) {
                 return Optional.of(mapMenuItem(resultSet));
             }
-            return Optional.empty();
         } catch (SQLException e) {
 //            throw new DAOException("Unable to find course", e);
         }
+        return Optional.empty();
     }
 
     private MenuItem mapMenuItem(ResultSet rs) throws SQLException {

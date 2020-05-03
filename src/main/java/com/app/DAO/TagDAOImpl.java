@@ -19,6 +19,11 @@ public class TagDAOImpl implements TagDAO {
             "INNER JOIN tags ON menu_items_tags.tag_id = tags.id" +
             "WHERE menu_item_id = ?;";
 
+    public static final String GET_TAG_BY_ID = "SELECT * FROM tags WHERE id = ?;";
+    public static final String DELETE_TAG_BY_ID = "DELETE FROM tags WHERE id = ?;";
+    public static final String CREATE_TAG = "INSERT INTO tags (name, discription) VALUES (?, ?);";
+    public static final String UPDATE_TAG = "INSERT INTO tags (id, name, discription) VALUES (?, ?, ?);";
+
 
 
     DataSource dataSource;
@@ -28,23 +33,61 @@ public class TagDAOImpl implements TagDAO {
     }
 
     @Override
-    public Optional<Tag> getById(Long id) {
+    public Optional<Tag> getById(Long id) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(GET_TAG_BY_ID);
+            query.setLong(1, id);
+            ResultSet resultSet = query.executeQuery();
+            if (resultSet.next()) {
+                return Optional.of(mapTag(resultSet));
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
         return Optional.empty();
     }
 
     @Override
-    public boolean create(Tag tag) {
-        return false;
+    public boolean create(Tag tag) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(CREATE_TAG);
+            query.setString(1, tag.getName());
+            query.setString(2, tag.getDiscription());
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        }
+        return true;
     }
 
     @Override
-    public boolean update(Tag tag) {
-        return false;
+    public boolean update(Tag tag) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(UPDATE_TAG);
+            query.setLong(1, tag.getId());
+            query.setString(2, tag.getName());
+            query.setString(3, tag.getDiscription());
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        }
+        return true;
     }
 
     @Override
-    public boolean deleteById(Long id) {
-        return false;
+    public boolean deleteById(Long id) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(DELETE_TAG_BY_ID);
+            query.setLong(1, id);
+            return query.executeUpdate() == 1;
+        } catch (
+                SQLException e) {
+            throw e;
+        }
     }
 
     @Override

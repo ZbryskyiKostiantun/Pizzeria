@@ -19,6 +19,13 @@ public  class MenuItem {
         this.type = type;
     }
 
+    public MenuItem(String name, String discription, Long price, Type type) {
+        this.name = name;
+        this.discription = discription;
+        this.price = price;
+        this.type = type;
+    }
+
     public MenuItem(Long id, String name, String discription, Long price, List<Ingredient> ingredients, List<Tag> tags, Type type) {
         this.id = id;
         this.name = name;
