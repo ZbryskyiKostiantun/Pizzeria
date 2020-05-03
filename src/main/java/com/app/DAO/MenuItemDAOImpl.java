@@ -6,18 +6,15 @@ import com.app.Model.Tag;
 import com.app.Model.Type;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.sql.Types.NULL;
+
 public class MenuItemDAOImpl implements MenuItemDAO {
     private DataSource dataSource;
-    private TagDAO tagDAO;
-    private IngredientDAO ingredientDAO;
 
     public static final String GET_MENU_ITEM_BY_ID = "SELECT * FROM menu_items where id = ?;";
 
@@ -26,12 +23,15 @@ public class MenuItemDAOImpl implements MenuItemDAO {
 
     public static final String GET_ALL_MENU_ITEMS_BY_TYPE = "SELECT *" +
                                                             "FROM menu_items" +
-                                                            "WHERE type = ?";
+                                                            "WHERE type= ?";
 
-    public static final String GET_MENU_ITEM_INGREDIENTS_BY_ID = "SELECT menu_items_ingredients.ingredient_id, ingredients.name, ingredients.discription" +
-                                                           "FROM menu_items_ingredients" +
-                                                           "INNER JOIN ingredients ON menu_items_ingredients.ingredient_id = ingredients.id" +
-                                                           "WHERE menu_item_id = ?;";
+    public static final String DELETE_MENU_ITEM_BY_ID = "DELETE FROM menu_items" +
+                                                        "WHERE id = ?;";
+
+    public static final String CREATE_MENU_ITEM = "INSERT INTO menu_items (name, discription, price, type) " +
+                                                  "VALUES (?, ?, ?, ?);";
+    public static final String UPDATE_MENU_ITEM = "INSERT INTO menu_items (id, name, discription, price, type) " +
+            "VALUES (?, ?, ?, ?, ?);";
 
 
     public MenuItemDAOImpl(DataSource dataSource) {
@@ -39,8 +39,19 @@ public class MenuItemDAOImpl implements MenuItemDAO {
     }
 
     @Override
-    public boolean create(MenuItem menuItem) {
-        return false;
+    public boolean create(MenuItem menuItem) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(CREATE_MENU_ITEM);
+            query.setString(1, menuItem.getName());
+            query.setString(2, menuItem.getDiscription());
+            query.setLong(3, menuItem.getPrice());
+            query.setString(4, String.valueOf(menuItem.getType()));
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        }
+        return true;
     }
 
     @Override
@@ -64,55 +75,69 @@ public class MenuItemDAOImpl implements MenuItemDAO {
     }
 
     @Override
-    public boolean deleteById(Long id) {
-        return false;
-    }
-    
-
-    public List<Ingredient> getIngredientsById(Long id) throws SQLException {
-        List<Ingredient> ingredients = new ArrayList<>();
+    public boolean deleteById(Long id) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement query = connection
-                    .prepareStatement(GET_MENU_ITEM_TAGS_BY_ID);
+                    .prepareStatement(DELETE_MENU_ITEM_BY_ID);
             query.setLong(1, id);
+            return query.executeUpdate() == 1;
+        } catch (
+                SQLException e) {
+            throw e;
+        }
+    }
+
+
+
+    @Override
+    public boolean update(MenuItem menuItem) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(UPDATE_MENU_ITEM);
+            query.setLong(1, menuItem.getId());
+            query.setString(2, menuItem.getName());
+            query.setString(3, menuItem.getDiscription());
+            query.setLong(4, menuItem.getPrice());
+            query.setString(5, String.valueOf(menuItem.getType()));
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        }
+        return true;
+    }
+
+    @Override
+    public List<MenuItem> getAll() throws SQLException {
+        List<MenuItem> menuItems = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(GET_ALL_MENU_ITEMS);
             ResultSet resultSet = query.executeQuery();
             while (resultSet.next()) {
-                ingredients.add(mapIngredient(resultSet));
+                menuItems.add(mapMenuItem(resultSet));
             }
         } catch (SQLException e) {
             throw e;
         }
-        return ingredients;
-    }
-
-
-    private Ingredient mapIngredient(ResultSet rs) throws SQLException {
-        return new Ingredient(rs.getLong("id"), rs.getString("name"),rs.getString("discription"));
-    }
-
-
-    @Override
-    public boolean update(MenuItem menuItem) {
-        return false;
+        return menuItems;
     }
 
     @Override
-    public List<MenuItem> getAll() {
-        return null;
+    public List<MenuItem> getAllByType(Type type) throws SQLException {
+        List<MenuItem> menuItems = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(GET_ALL_MENU_ITEMS_BY_TYPE);
+            query.setString(1, String.valueOf(type));
+            ResultSet resultSet = query.executeQuery();
+            while (resultSet.next()) {
+                menuItems.add(mapMenuItem(resultSet));
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+        return menuItems;
     }
 
-    @Override
-    public List<MenuItem> getAllByType(Type type) {
-        return null;
-    }
-
-    @Override
-    public List<MenuItem> getAllByTags(List<Tag> tags) {
-        return null;
-    }
-
-//    private MenuItem mapMenuItem(ResultSet rs) throws SQLException {
-//        return new MenuItem(rs.getLong("id"), rs.getString("name"), rs.getString("description"), rs.getLong("price"), rs.get);
-//    }
 
 }

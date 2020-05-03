@@ -3,8 +3,11 @@ package com.app.DAO;
 import com.app.Model.Ingredient;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,11 +45,24 @@ public class IngredientDAOImpl implements IngredientDAO {
 
     @Override
     public Ingredient mapIngredient(ResultSet rs) throws SQLException {
-        return null;
+        return new Ingredient(rs.getLong("id"), rs.getString("name"),rs.getString("discription"));
     }
+
 
     @Override
     public List<Ingredient> getIngredientsByMenuItemId(Long id) throws SQLException {
-        return null;
+        List<Ingredient> ingredients = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement query = connection
+                    .prepareStatement(GET_INGREDIENTS_BY_MENU_ITEM_ID);
+            query.setLong(1, id);
+            ResultSet resultSet = query.executeQuery();
+            while (resultSet.next()) {
+                ingredients.add(mapIngredient(resultSet));
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+        return ingredients;
     }
 }
